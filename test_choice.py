@@ -24,7 +24,7 @@ import re
 
 # 示例题目文本
 question_text = """
-1. 在太空实验室中可以利用匀速圆周运动测量小球质量。如图所示, 不可伸长的轻绳一端固定于 $O$ 点,
+11. 在太空实验室中可以利用匀速圆周运动测量小球质量。如图所示, 不可伸长的轻绳一端固定于 $O$ 点,
 另一端系一待测小球, 使其绕 $O$ 做匀速圆周运动, 用力传感器测得绳上的拉力为 $F$,
 用停表测得小球转过 $n$ 圈所用的时间为 $t$, 用刻度尺测得 $O$ 点到球心的距离为圆周运动的半径 $R$ 。
 下列说法正确的是 ( )
@@ -46,13 +46,15 @@ match = re.search(pattern, question_text, re.DOTALL)
 # 提取匹配的变量
 if match:
     题干 = match.group("题干")
-    选项A = match.group("选项A")
-    选项B = match.group("选项B")
-    选项C = match.group("选项C")
-    选项D = match.group("选项D")
+    选项A = match.group("选项A")[3:]  # 去除选项开头的字母和点
+    选项B = match.group("选项B")[3:]
+    选项C = match.group("选项C")[3:]
+    选项D = match.group("选项D")[3:]
     答案 = match.group("答案")
     详解 = match.group("详解")
 
+    # 去除题干的序号
+    题干 = re.sub(r"^[0-9]+\.", "", 题干).strip()
     # 打印提取的变量
     print("题干:", 题干)
     print("选项A:", 选项A)
