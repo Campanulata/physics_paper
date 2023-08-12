@@ -6,6 +6,14 @@ class Aaron:
         self.input_file = input_file
         self.output_file = output_file
 
+    def determine_question_type(question):
+        if re.search(r'\{.*?\}', question):  # 填空题判断，检查是否有{}
+            return "填空题"
+        elif re.search(r'[A-D]\.', question):  # 选择题判断，检查是否有A.、B.、C.、D.
+            return "选择题"
+        else:
+            return "解答题"
+
     def extract_questions(self):
         # 读取Markdown文件
         with open('input.txt', 'r') as file:
@@ -22,6 +30,13 @@ class Aaron:
 
         # 遍历每个选择题
         for question in questions:
+            # 获取题型
+            question_type=self.determine_question_type(question)
+            match question_type:
+                case '填空题':
+                    return 2
+            # 选择题
+            elif 
             # 定义正则表达式模式
             pattern = r"(?P<题干>[0-9]+\..+?)\n(?P<选项A>A\..+?)\n(?P<选项B>B\..+?)\n(?P<选项C>C\..+?)\n(?P<选项D>D\..+?)\n【答案】(?P<答案>.+)\n【详解】(?P<详解>.+)"
 
