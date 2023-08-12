@@ -1,4 +1,5 @@
 import pandas as pd
+import re
 
 class Aaron:
     def __init__(self, input_file, output_file):
@@ -21,49 +22,24 @@ class Aaron:
 
         # 遍历每个选择题
         for question in questions:
-            # 按行分割选择题的内容
-            lines = question.split('\n')
+            # 定义正则表达式模式
+            pattern = r"(?P<题干>[0-9]+\..+?)\n(?P<选项A>A\..+?)\n(?P<选项B>B\..+?)\n(?P<选项C>C\..+?)\n(?P<选项D>D\..+?)\n【答案】(?P<答案>.+)\n【详解】(?P<详解>.+)"
 
-            # 查找题干的开始和结束位置
-            question_start = 0
-            question_end = 0
-            while not lines[question_end].startswith('A. ') and question_end < len(lines) - 1:
-                question_end += 1
-            question_end -= 1  # 题干的结束行为选项A开始行的上一行
-
-            # 处理题干，去除题干的序号
-            question_text = '\n'.join(lines[question_start:question_end+1])
-            question_text = '\n'.join(question_text.split('.')[1:]).strip()
-
-            # 初始化选项、答案和详解的内容
-            options = [''] * 4
-            answer = ''
-            explanation = ''
-
-            # 查找选项、答案和详解的内容
-            option_start = question_end + 1
-            for i in range(option_start, len(lines)):
-                line = lines[i]
-                if line.startswith('【答案】'):
-                    answer = line[4:].strip()
-                elif line.startswith('【详解】'):
-                    explanation = '\n'.join(lines[i:]).replace('【详解】', '').strip()
-                    break
-                else:
-                    option_index = i - option_start
-                    if option_index < 4:
-                        options[option_index] = line[3:].strip()  # 删除选项开头的"A. "
-
+            # 使用正则表达式进行匹配
+            match = re.search(pattern, question, re.DOTALL)
+            # 提取匹配的变量，微调
+            data_df=pd.DataFrame({
+                    '题干': re.sub(r"^[0-9]+\.", "", match.group("题干")).strip(),  # 去除题干的序号
+                    '选项A': match.group("选项A")[3:],  # 去除选项开头的字母和点,
+                    '选项B': match.group("选项B")[3:],
+                    '选项C': match.group("选项C")[3:],
+                    '选项D': match.group("选项D")[3:],
+                    '答案': match.group("答案"),
+                    '详解': match.group("详解")
+                }, index=[0])
             # 将提取的数据添加到DataFrame中
-            df = df.append({
-                '题干': question_text,
-                '选项A': options[0],
-                '选项B': options[1],
-                '选项C': options[2],
-                '选项D': options[3],
-                '答案': answer,
-                '详解': explanation
-            }, ignore_index=True)
+            if match:
+                df = pd.concat([df,data_df], ignore_index=True)
 
         # 统计查询到的题目数量
         num_questions = len(df)
