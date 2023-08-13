@@ -33,29 +33,30 @@ class Aaron:
             # 获取题型
             question_type=self.determine_question_type(question)
             match question_type:
+                # 填空题
                 case '填空题':
                     return 2
-            # 选择题
-            elif 
-            # 定义正则表达式模式
-            pattern = r"(?P<题干>[0-9]+\..+?)\n(?P<选项A>A\..+?)\n(?P<选项B>B\..+?)\n(?P<选项C>C\..+?)\n(?P<选项D>D\..+?)\n【答案】(?P<答案>.+)\n【详解】(?P<详解>.+)"
-
-            # 使用正则表达式进行匹配
-            match = re.search(pattern, question, re.DOTALL)
-            # 提取匹配的变量，微调
-            data_df=pd.DataFrame({
-                    '题干': re.sub(r"^[0-9]+\.", "", match.group("题干")).strip(),  # 去除题干的序号
-                    '选项A': match.group("选项A")[3:],  # 去除选项开头的字母和点,
-                    '选项B': match.group("选项B")[3:],
-                    '选项C': match.group("选项C")[3:],
-                    '选项D': match.group("选项D")[3:],
-                    '答案': match.group("答案"),
-                    '详解': match.group("详解")
-                }, index=[0])
-            # 将提取的数据添加到DataFrame中
-            if match:
-                df = pd.concat([df,data_df], ignore_index=True)
-
+                # 选择题
+                case '选择题':
+                    # 定义正则表达式模式
+                    pattern = r"(?P<题干>[0-9]+\..+?)\n(?P<选项A>A\..+?)\n(?P<选项B>B\..+?)\n(?P<选项C>C\..+?)\n(?P<选项D>D\..+?)\n【答案】(?P<答案>.+)\n【详解】(?P<详解>.+)"
+                    # 使用正则表达式进行匹配
+                    match = re.search(pattern, question, re.DOTALL)
+                    # 提取匹配的变量，微调
+                    data_df=pd.DataFrame({
+                            '题干': re.sub(r"^[0-9]+\.", "", match.group("题干")).strip(),  # 去除题干的序号
+                            '选项A': match.group("选项A")[3:],  # 去除选项开头的字母和点,
+                            '选项B': match.group("选项B")[3:],
+                            '选项C': match.group("选项C")[3:],
+                            '选项D': match.group("选项D")[3:],
+                            '答案': match.group("答案"),
+                            '详解': match.group("详解")
+                        }, index=[0])
+                    # 将提取的数据添加到DataFrame中
+                    if match:
+                        df = pd.concat([df,data_df], ignore_index=True)
+                    else:
+                        print("未找到匹配")
         # 统计查询到的题目数量
         num_questions = len(df)
 
