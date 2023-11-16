@@ -4,7 +4,7 @@
 这个模块包含了一个用于从Markdown文件中提取题目并保存为CSV文件的工具类 QuestionExtractor。
 
 用法示例：
-    aaron = QuestionExtractor('input.txt', 'output.csv')
+    aaron = QuestionExtractor('input.txt')
     aaron.extract_questions()
 """
 import re
@@ -21,9 +21,8 @@ class AaronPro:
     - extract_questions: 提取题目并保存为CSV文件的方法。
     """
 
-    def __init__(self, input_file, output_file):
+    def __init__(self, input_file):
         self.input_file = input_file
-        self.output_file = output_file
 
     def determine_question_type(self, question):
         """
@@ -107,9 +106,9 @@ class AaronPro:
         print(f'共查询到{num_questions}道题目')
 
         # 保存为CSV文件
-        df.to_csv('output.csv', index=False)
+        df.to_csv('output.xlsx', index=False)
 
 
 # 示例用法
-aaron = AaronPro('input.txt', 'output.csv')
+aaron = AaronPro('input.txt')
 aaron.extract_questions()
