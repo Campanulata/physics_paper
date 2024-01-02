@@ -1,5 +1,3 @@
-import re
-
 """
 请用Python写一段脚本，脚本功能是用正则表达式匹配8个变量：序号、题干、选项A、选项B、选项C、选项D、答案、详解。其中每个变量都可能由多行组成。我的题目格式为：
 1. 在太空实验室中可以利用匀速圆周运动测量小球质量。如图所示, 不可伸长的轻绳一端固定于 $O$ 点, 另 一端系一待测小球, 使其绕 $O$ 做匀速圆周运动, 用力传感器测得绳上的拉力为 $F$, 用停表测得小球转过 $n$ 圈 所用的时间为 $t$, 用刻度尺测得 $O$ 点到球心的距离为圆周运动的半径 $R$ 。下列说法正确的是 ( )
@@ -19,11 +17,10 @@ $$
 解得小球质量
 """
 
-# 示例题目文本
 import re
 
 # 示例题目文本
-question_text = """
+CONTENT = """
 11. 在太空实验室中可以利用匀速圆周运动测量小球质量。如图所示, 不可伸长的轻绳一端固定于 $O$ 点,
 另一端系一待测小球, 使其绕 $O$ 做匀速圆周运动, 用力传感器测得绳上的拉力为 $F$,
 用停表测得小球转过 $n$ 圈所用的时间为 $t$, 用刻度尺测得 $O$ 点到球心的距离为圆周运动的半径 $R$ 。
@@ -38,30 +35,30 @@ B. 根据公式: $F=m \\omega^{2} R$, $\\omega=\\frac{2 \\pi n}{t}$ 解得小球
 """
 
 # 定义正则表达式模式
-pattern = r"(?P<题干>[0-9]+\..+?)\n(?P<选项A>A\..+?)\n(?P<选项B>B\..+?)\n(?P<选项C>C\..+?)\n(?P<选项D>D\..+?)\n【答案】(?P<答案>.+)\n【详解】(?P<详解>.+)"
-
+PATTERN = r"(?P<题干>[0-9]+\..+?)\n(?P<选项A>A\..+?)\n(?P<选项B>B\..+?)\n(?P<选项C>C\..+?)\n(?P<选项D>D\..+?)\n【答案】(?P<答案>.+)\n【详解】(?P<详解>.+)"
+# PATTERN = r"(?P<题干>[0-9]+\..+?)\n(?P<选项A>A\..+?)(?=B\.)\n(?P<选项B>B\..+?)(?=C\.)\n(?P<选项C>C\..+?)(?=D\.)\n(?P<选项D>D\..+?)(?=【答案】)\n【答案】(?P<答案>.+?)(?=【详解】)\n【详解】(?P<详解>.+)"
 # 使用正则表达式进行匹配
-match = re.search(pattern, question_text, re.DOTALL)
+match = re.search(PATTERN, CONTENT, re.DOTALL)
 
 # 提取匹配的变量
 if match:
-    题干 = match.group("题干")
-    选项A = match.group("选项A")[3:]  # 去除选项开头的字母和点
-    选项B = match.group("选项B")[3:]
-    选项C = match.group("选项C")[3:]
-    选项D = match.group("选项D")[3:]
-    答案 = match.group("答案")
-    详解 = match.group("详解")
+    content = match.group("题干")
+    option_A = match.group("选项A")[3:]  # 去除选项开头的字母和点
+    option_B = match.group("选项B")[3:]
+    option_C = match.group("选项C")[3:]
+    option_D = match.group("选项D")[3:]
+    answer = match.group("答案")
+    explanation = match.group("详解")
 
     # 去除题干的序号
-    题干 = re.sub(r"^[0-9]+\.", "", 题干).strip()
+    content = re.sub(r"^[0-9]+\.", "", content).strip()
     # 打印提取的变量
-    print("题干:", 题干)
-    print("选项A:", 选项A)
-    print("选项B:", 选项B)
-    print("选项C:", 选项C)
-    print("选项D:", 选项D)
-    print("答案:", 答案)
-    print("详解:", 详解)
+    print("题干:", content)
+    print("选项A:", option_A)
+    print("选项B:", option_B)
+    print("选项C:", option_C)
+    print("选项D:", option_D)
+    print("答案:", answer)
+    print("详解:", explanation)
 else:
     print("未找到匹配")
