@@ -50,7 +50,7 @@ class AaronPro:
         返回值:
         - str: 题目类型，可以是 "填空题"、"选择题" 或 "解答题"。
         """
-        if re.search(r'\{.*?\}', question):
+        if re.search(r'\{\}', question):
             return QuestionType.FILL_IN_THE_BLANK
         if re.search(r'[A-D]\.', question):
             return QuestionType.MULTIPLE_CHOICE
