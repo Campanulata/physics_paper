@@ -8,8 +8,16 @@
     aaron.extract_questions()
 """
 import re
+from enum import Enum
 import pandas as pd
 
+class QuestionType(Enum):
+    """
+    枚举类型，用于表示题目类型。
+    """
+    FILL_IN_THE_BLANK = "填空题"
+    MULTIPLE_CHOICE = "选择题"
+    RESPONSE = "解答题"
 
 class AaronPro:
     """
@@ -24,6 +32,14 @@ class AaronPro:
     def __init__(self, input_file):
         self.input_file = input_file
 
+    def _parse_markdown_file(self):
+        try:
+            with open(self.input_file, 'r', encoding='utf-8') as file:
+                return file.readlines()
+        except (FileNotFoundError, IOError) as e:
+            print(f'在打开文件"{self.input_file}"时发生错误: {str(e)}')
+            return []
+
     def determine_question_type(self, question):
         """
         判断题目类型的方法。
@@ -34,78 +50,58 @@ class AaronPro:
         返回值:
         - str: 题目类型，可以是 "填空题"、"选择题" 或 "解答题"。
         """
-        if re.search(r'\{.*?\}', question):  # 填空题判断，检查是否有{}
-            return "填空题"
-        if re.search(r'[A-D]\.', question):  # 选择题判断，检查是否有A.、B.、C.、D.
-            return "选择题"
-        return "解答题"
+        if re.search(r'\{.*?\}', question):
+            return QuestionType.FILL_IN_THE_BLANK
+        if re.search(r'[A-D]\.', question):
+            return QuestionType.MULTIPLE_CHOICE
+        return QuestionType.RESPONSE
+
+    def _handle_multiple_choice(self, question, df):
+        """
+        处理选择题的方法。
+
+        参数:
+        - question (str): 输入的题目字符串。
+        - df (pandas.DataFrame): 保存题目数据的DataFrame。
+        """
+        pattern = r"(?P<题干>[0-9]+\..+?)\n(?P<选项A>A\..+?)\n(?P<选项B>B\..+?)\n(?P<选项C>C\..+?)\n(?P<选项D>D\..+?)\n【答案】(?P<答案>.+)\n【详解】(?P<详解>.+)"
+        match = re.search(pattern, question, re.DOTALL)
+
+        if not match:
+            print("未找到匹配")
+            return
+
+        df.loc[len(df)] = {
+            '题干': re.sub(r"^[0-9]+\.", "", match.group("题干")).strip(),
+            '选项A': match.group("选项A")[3:],
+            '选项B': match.group("选项B")[3:],
+            '选项C': match.group("选项C")[3:],
+            '选项D': match.group("选项D")[3:],
+            '答案': match.group("答案"),
+            '详解': match.group("详解")
+        }
 
     def extract_questions(self):
         """
-        提取题目并保存为CSV文件的方法。
-
-        该方法会读取输入文件，并提取题目并保存为CSV文件。
+        提取题目数据的入口方法。
         """
-        # 读取Markdown文件
-        with open(self.input_file, 'r', encoding='utf-8') as file:
-            markdown_data = file.readlines()[2:]  # 忽略前两行内容
+        markdown_data = self._parse_markdown_file()
 
-        # 将剩余的Markdown内容连接为单个字符串
-        markdown_data = ''.join(markdown_data)
-        try:
-            # 读取Markdown文件
-            with open('input.txt', 'r', encoding='utf-8') as file:
-                markdown_data = file.readlines()[2:]  # 忽略前两行内容
+        if not markdown_data:
+            return
 
-            # 将剩余的Markdown内容连接为单个字符串
-            markdown_data = ''.join(markdown_data)
+        questions = ''.join(markdown_data).split('\n\n')
 
-            # 以空行分割选择题
-            questions = markdown_data.split('\n\n')
+        df = pd.DataFrame(columns=['题干', '选项A', '选项B', '选项C', '选项D', '答案', '详解'])
 
-            # 创建一个DataFrame来存储选择题
-            df = pd.DataFrame(
-                columns=['题干', '选项A', '选项B', '选项C', '选项D', '答案', '详解'])
+        for question in questions:
+            question_type = self.determine_question_type(question)
 
-            # 遍历每个选择题
-            for question in questions:
-                # 获取题型
-                question_type = self.determine_question_type(question)
-                match question_type:
-                    # 填空题
-                    case '填空题':
-                        return 2
-                    # 选择题
-                    case '选择题':
-                        # 定义正则表达式模式
-                        pattern = r"(?P<题干>[0-9]+\..+?)\n(?P<选项A>A\..+?)\n(?P<选项B>B\..+?)\n(?P<选项C>C\..+?)\n(?P<选项D>D\..+?)\n【答案】(?P<答案>.+)\n【详解】(?P<详解>.+)"
-                        # 使用正则表达式进行匹配
-                        match = re.search(pattern, question, re.DOTALL)
-                        # 提取匹配的变量，微调
-                        data_df = pd.DataFrame({
-                            # 去除题干的序号
-                            '题干': re.sub(r"^[0-9]+\.", "", match.group("题干")).strip(),
-                            '选项A': match.group("选项A")[3:],  # 去除选项开头的字母和点,
-                            '选项B': match.group("选项B")[3:],
-                            '选项C': match.group("选项C")[3:],
-                            '选项D': match.group("选项D")[3:],
-                            '答案': match.group("答案"),
-                            '详解': match.group("详解")
-                        }, index=[0])
-                        # 将提取的数据添加到DataFrame中
-                        if match:
-                            df = pd.concat([df, data_df], ignore_index=True)
-                        else:
-                            print("未找到匹配")
-        except FileNotFoundError:
-            print(f'文件"{self.input_file}"不存在')
-        # 统计查询到的题目数量
-        num_questions = len(df)
+            if question_type == QuestionType.MULTIPLE_CHOICE:
+                self._handle_multiple_choice(question, df)
 
-        # 输出查询到的题目数量
-        print(f'共查询到{num_questions}道题目')
+        print(f'共查询到{len(df)}道题目')
 
-        # 保存为CSV文件
         df.to_csv('output.xlsx', index=False)
 
 
