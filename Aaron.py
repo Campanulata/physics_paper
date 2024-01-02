@@ -102,7 +102,7 @@ class AaronPro:
 
         print(f'共查询到{len(df)}道题目')
 
-        df.to_csv('output.xlsx', index=False)
+        df.to_csv('output.csv', index=False)
 
 
 # 示例用法
