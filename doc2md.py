@@ -8,3 +8,4 @@ for filename in os.listdir(directory):
     if filename.endswith(".docx"):
         md_filename = os.path.splitext(filename)[0] + '.md'
         subprocess.run(['pandoc', '-s', os.path.join(directory, filename), '-t', 'markdown', '-o', os.path.join(directory, md_filename)])
+        os.remove(os.path.join(directory, filename)) # 这行代码将删除.docx文件
